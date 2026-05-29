@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <title>Manajemen Proyek Kandang Ayam</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand-header">
+      <div class="brand-left" style="display:flex;gap:16px;align-items:center">
+        <div class="brand-logo">
+          <img id="company-logo" src="logo.png" alt="Logo perusahaan" onerror="this.style.display='none'" onload="document.getElementById('brand-svg').style.display='none'" />
+          <svg id="brand-svg" viewBox="0 0 72 72" aria-hidden="true">
+            <circle cx="36" cy="36" r="34" fill="#2d6a4f" />
+            <path d="M30 20 L42 20 L46 40 L56 40 L44 50 L28 50 L26 44 L34 44 Z" fill="#ffba08" />
+          </svg>
+          <label for="company-logo-file" class="logo-edit" title="Ubah logo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <input type="file" id="company-logo-file" accept="image/*" style="display:none" />
+          </label>
+          <button id="remove-logo-button" class="logo-remove" title="Hapus logo" aria-label="Hapus logo">✕</button>
+        </div>
+        <div class="brand-info">
+          <p class="brand-company">KOPERASI PRODUSEN USAHA LPER</p>
+          <p class="brand-address">Jl. Kerinci Raya Blok D15 No. 5-6, Jatiwarna, Pondok Melati, Kota Bekasi, Jawa Barat</p>
+        </div>
+      </div>
+      <div class="brand-actions" style="margin-left:auto;">
+        <label class="file-input small" style="display:none">
+          <input type="file" id="company-logo-file-dup" accept="image/*" />
+          Unggah Logo
+        </label>
+      </div>
+    </div>
+
+    <h1>Manajemen Proyek Pembangunan Kandang Ayam</h1>
+    <p>Kontrol pengeluaran proyek, jadwal pelaksanaan, stok gudang, lokasi, dan kuantitas progress</p>
+  </header>
+
+  <main>
+    <section class="dashboard-cards">
+      <article class="kpi-card">
+        <p class="metric-label">Total Pengeluaran</p>
+        <p class="metric-number" id="card-total-cost">Rp 0</p>
+        <span class="metric-detail">Ringkasan total pengeluaran proyek.</span>
+      </article>
+      <article class="kpi-card">
+        <p class="metric-label">Stok Gudang</p>
+        <p class="metric-number" id="card-warehouse-qty">0 item</p>
+        <span class="metric-detail">Total jumlah unit material tersedia.</span>
+      </article>
+      <article class="kpi-card">
+        <p class="metric-label">Kegiatan Aktif</p>
+        <p class="metric-number" id="card-active-tasks">0</p>
+        <span class="metric-detail">Jumlah tugas yang sedang berjalan.</span>
+      </article>
+      <article class="kpi-card">
+        <p class="metric-label">Deadline Terdekat</p>
+        <p class="metric-number" id="card-next-deadline">-</p>
+        <span class="metric-detail">Tenggat waktu aktivitas berikutnya.</span>
+      </article>
+      <article class="kpi-card">
+        <p class="metric-label">Biaya Proyek Terpilih</p>
+        <p class="metric-number" id="card-project-cost">Rp 0</p>
+        <span class="metric-detail">Total biaya material untuk proyek yang dipilih.</span>
+      </article>
+      <article class="kpi-card">
+        <p class="metric-label">Cuaca Lokasi</p>
+        <p class="metric-number" id="card-weather">-</p>
+        <span class="metric-detail" id="weather-detail">Pilih proyek untuk melihat cuaca.</span>
+      </article>
+    </section>
+
+    <section class="panel dashboard-chart-panel">
+      <h2>Grafik Biaya Proyek</h2>
+      <div class="chart-wrapper">
+        <canvas id="project-chart" width="1200" height="420"></canvas>
+        <p class="chart-note">Grafik lingkaran menampilkan total biaya proyek sebagai donat dan persentase realisasi setiap proyek.</p>
+      </div>
+    </section>
+
+    <section class="panel project-dashboard-panel">
+      <h2>Ringkasan Proyek</h2>
+      <div id="project-dashboard-list" class="project-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Daftar Proyek</h2>
+      <form id="project-form" class="form-grid">
+        <input type="text" id="project-name" placeholder="Nama proyek" required />
+        <input type="text" id="project-location" placeholder="Lokasi / alamat proyek" required />
+        <input type="date" id="project-target" required />
+        <input type="number" id="project-realization" placeholder="Realisasi (%)" min="0" max="100" required />
+        <button type="submit">Tambah Proyek</button>
+      </form>
+      <div class="filter-row">
+        <input type="search" id="project-filter" placeholder="Filter proyek nama atau lokasi" />
+      </div>
+      <div class="table-wrapper">
+        <table id="project-table">
+          <thead>
+            <tr><th>Proyek</th><th>Lokasi</th><th>Target Selesai</th><th>Realisasi</th><th>Biaya Material</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel map-panel">
+      <h2>Peta Lokasi Proyek</h2>
+      <div class="map-wrapper">
+        <p id="map-message">Pilih proyek untuk melihat peta lokasi yang lebih akurat.</p>
+        <iframe id="project-map-iframe" class="map-frame hidden" src="" loading="lazy" title="Peta Lokasi Proyek"></iframe>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Pengeluaran Proyek</h2>
+      <form id="material-form" class="form-grid">
+        <select id="material-project" required>
+          <option value="">Pilih proyek</option>
+        </select>
+        <input type="text" id="material-name" placeholder="Nama material" required />
+        <input type="number" id="material-qty" placeholder="Jumlah" min="1" required />
+        <input type="number" id="material-price" placeholder="Harga satuan" min="0" step="0.01" required />
+        <button type="submit">Tambah Material</button>
+      </form>
+      <form id="import-form" class="photo-form">
+        <label class="file-input">
+          <input type="file" id="import-file" accept=".csv,.xls,.xlsx,application/json" required />
+          Pilih File CSV / Excel / JSON
+        </label>
+        <button type="submit">Impor Material</button>
+      </form>
+      <div class="table-wrapper">
+        <table id="material-table">
+          <thead>
+            <tr><th>Proyek</th><th>Nama</th><th>Jumlah</th><th>Harga Satuan</th><th>Pengeluaran</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Jadwal Pelaksanaan</h2>
+      <form id="schedule-form" class="form-grid">
+        <input type="text" id="schedule-task" placeholder="Kegiatan" required />
+        <input type="date" id="schedule-start" required />
+        <input type="date" id="schedule-end" required />
+        <button type="submit">Tambah Jadwal</button>
+      </form>
+      <div class="table-wrapper">
+        <table id="schedule-table">
+          <thead>
+            <tr><th>Kegiatan</th><th>Mulai</th><th>Selesai</th><th>Status</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Gudang</h2>
+      <form id="warehouse-form" class="form-grid">
+        <input type="text" id="warehouse-name" placeholder="Item gudang" required />
+        <input type="number" id="warehouse-qty" placeholder="Stok" min="1" required />
+        <button type="submit">Tambah Item</button>
+      </form>
+      <div class="table-wrapper">
+        <table id="warehouse-table">
+          <thead>
+            <tr><th>Item</th><th>Stok</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Foto Progres Proyek</h2>
+      <form id="photo-form" class="photo-form">
+        <label class="file-input">
+          <input type="file" id="photo-file" accept="image/*" multiple required />
+          Pilih Foto
+        </label>
+        <button type="submit">Unggah Foto</button>
+      </form>
+      <div class="photo-gallery" id="photo-gallery">
+        <div class="photo-empty">Belum ada foto progres. Unggah untuk memantau perkembangan.</div>
+      </div>
+    </section>
+
+    <div id="photo-modal" class="photo-modal hidden" role="dialog" aria-modal="true">
+      <div class="photo-modal-backdrop"></div>
+      <div class="photo-modal-content">
+        <button id="photo-modal-close" class="photo-modal-close" aria-label="Tutup">×</button>
+        <img id="photo-modal-img" src="" alt="Foto progres besar" />
+        <p id="photo-modal-caption"></p>
+      </div>
+    </div>
+
+    <section class="panel summary-panel">
+      <h2>Ringkasan Biaya Proyek</h2>
+      <div class="summary-grid">
+        <div>
+          <strong>Total Pengeluaran:</strong>
+          <p id="total-purchase">Rp 0</p>
+        </div>
+        <div>
+          <strong>Stok Gudang:</strong>
+          <p id="warehouse-value">0 item</p>
+        </div>
+        <div>
+          <strong>Total Kegiatan:</strong>
+          <p id="total-activities">0</p>
+        </div>
+      </div>
+      <div class="progress-group">
+        <div>
+          <strong>Status Proyek</strong>
+          <div class="progress-track">
+            <div class="progress-fill" id="project-progress"></div>
+          </div>
+          <p class="progress-label" id="progress-label">Belum ada jadwal aktif</p>
+        </div>
+      </div>
+      <button id="reset-button" class="danger">Reset Seluruh Data</button>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
